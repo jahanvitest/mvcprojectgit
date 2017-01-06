@@ -1,0 +1,156 @@
+﻿@{
+    ViewBag.Title = "Index";
+
+    var countrygrid = new WebGrid(Model, canPage: true, rowsPerPage: 5);
+}
+
+<h2>WebGrid Example</h2>
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+
+<h3>@Html.ActionLink("Create New", "Create", "Country")</h3>
+<style>
+    .table {
+        text-align: center;
+        background-color: #f5eded;
+    }
+
+    .countrygrid thead th {
+        background-color: gray;
+    }
+
+    .editmode {
+        display: none;
+    }
+
+    .btn-danger {
+        display: inline-block;
+    }
+</style>
+
+@countrygrid.GetHtml(
+    htmlAttributes: new { @id = "countrygrid", @class = "table" },
+    fillEmptyRows: false,
+    mode: WebGridPagerModes.All,
+    firstText: "<< first",
+    lastText: "Last >>",
+    previousText: "< pre",
+    nextText: "next >",
+            columns: new[] {
+
+                countrygrid.Column("Con_id","Country Id", @<text><span class="conid  control-label col-md-2 ">@item.Con_id</span></text>,canSort:false),
+                countrygrid.Column("Con_name","Country Name",@<text><span class="readmode control-label col-md-2">@item.Con_name</span>
+
+
+                <input type="text" id="txtcnm_@item.Con_id" value="@item.Con_name" class="editmode form-control" placeholder="Enter CountryName" /></text>),
+
+                 countrygrid.Column("Action","",format:@<text>
+                    <button class="readmode btnedit btn-primary">Edit</button>
+                    <button class="readmode btndelete btn-danger">Delete</button>
+                    <button class="editmode btnupdate btn-primary">Update</button>
+                    <button class="editmode btncancel btn-primary">Cancel</button> </text>,canSort:false)
+
+    })
+
+<script>
+
+    $(document).ready(function () {
+        var tablerow = $("#countrygrid tbody tr ")
+
+        var preEditIndex = -1;
+
+
+        $(".btnedit").click(function () {
+
+            var rowIndex = $(this).parent("td").parent("tr").index();
+            // alert(rowIndex);
+
+            //$(".readmode").hide();
+            //$(".editmode").show();
+
+            $(tablerow[preEditIndex]).find(".readmode").show();
+
+            $(tablerow[preEditIndex]).find(".editmode").hide();
+
+
+            $(tablerow[rowIndex]).find(".readmode").hide();
+
+            $(tablerow[rowIndex]).find(".editmode").show();
+
+            preEditIndex = rowIndex;
+        });
+        $(".btncancel").click(function () {
+
+            $(tablerow[preEditIndex]).find(".readmode").show();
+
+            $(tablerow[preEditIndex]).find(".editmode").hide();
+
+        });
+
+        $(".btndelete").click(function () {
+
+            var rowIndex = $(this).parent("td").parent("tr").index();
+
+            var id = $(tablerow[rowIndex]).find(".conid").html();
+
+            var d = { Con_id: id };
+
+            $.ajax({
+
+                type: 'POST',
+                dataType: 'json',
+                contentType: 'application/json',
+                url: "/Country/Delete/" + id,
+                data: JSON.stringify(d),
+                success: function (data) {
+                    alert(data);
+                    window.location = "/Country/Index"
+                },
+                error: function (err) {
+                    alert(er.statusText);
+
+                }
+
+            });
+
+
+        });
+        $(".btnupdate").click(function () {
+
+
+            var id = $(tablerow[preEditIndex]).find(".conid").html();
+            // alert(id);
+
+            var cnm = $("#txtcnm_" + id).val();
+
+            var d = { Con_id: id, Con_name: cnm };
+            $.ajax({
+
+                type: 'POST',
+                dataType: 'json',
+                data: JSON.stringify(d),
+                contentType: 'application/json',
+                url: "/Country/Update",
+                success: function (data) {
+                    alert(data);
+                    window.location = "/Country/Index"
+                },
+                error: function (err) {
+                    alert(err.statusText);
+                }
+
+            });
+
+
+        });
+
+    });
+
+   
+
+
+
+</script>
+
+
+
+
